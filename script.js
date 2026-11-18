@@ -4,7 +4,7 @@
 const API_BASE =
     (window.ENV && window.ENV.API_BASE_URL) ||
     (typeof process !== "undefined" && process.env && process.env.VITE_API_BASE_URL) ||
-    "https://your-railway-backend-url.up.railway.app";
+    "https://barrierlens-production.up.railway.app";
 
 let currentUser = null;
 let reports = [];
