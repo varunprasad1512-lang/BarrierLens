@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BarrierLens</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+
+<div id="authScreen" class="auth-screen">
+    <div class="auth-card">
+        <div class="auth-brand">
+            <div>
+                <h1>BarrierLens</h1>
+                <p>Detect barriers. Improve accessibility.</p>
+            </div>
+        </div>
+
+        <div class="auth-tabs">
+            <button id="loginTab" class="auth-tab active" type="button">Sign In</button>
+            <button id="registerTab" class="auth-tab" type="button">Create Account</button>
+        </div>
+
+        <form id="loginForm" class="auth-form">
+            <h2>Welcome back</h2>
+            <p class="auth-description">Sign in to continue to BarrierLens.</p>
+
+            <label for="loginEmail">Email</label>
+            <input id="loginEmail" type="email" autocomplete="email" placeholder="Enter your email" required>
+
+            <label for="loginPassword">Password</label>
+            <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Enter your password" required>
+
+            <button id="loginButton" class="primary-button full-width" type="submit">Sign In</button>
+            <div id="loginMessage" class="auth-message"></div>
+        </form>
+
+        <form id="registerForm" class="auth-form hidden">
+            <h2>Create your account</h2>
+            <p class="auth-description">Start identifying accessibility barriers.</p>
+
+            <label for="registerName">Full Name</label>
+            <input id="registerName" type="text" autocomplete="name" placeholder="Enter your name" required>
+
+            <label for="registerEmail">Email</label>
+            <input id="registerEmail" type="email" autocomplete="email" placeholder="Enter your email" required>
+
+            <label for="registerPassword">Password</label>
+            <input id="registerPassword" type="password" autocomplete="new-password" placeholder="Create a password" minlength="6" required>
+
+            <label for="registerConfirm">Confirm Password</label>
+            <input id="registerConfirm" type="password" autocomplete="new-password" placeholder="Confirm your password" minlength="6" required>
+
+            <label class="checkbox-row">
+                <input id="acceptTerms" type="checkbox" required>
+                <span>I agree to the BarrierLens terms.</span>
+            </label>
+
+            <button class="primary-button full-width" type="submit">Create Account</button>
+            <div id="registerMessage" class="auth-message"></div>
+        </form>
+    </div>
+</div>
+
+<div id="app" class="app hidden">
+    <aside id="sidebar" class="sidebar">
+        <div class="brand">
+            <div>
+                <h1>BarrierLens</h1>
+                <p>Accessibility Intelligence</p>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <button class="nav-item active" data-page="dashboard" type="button">Dashboard</button>
+            <button class="nav-item" data-page="detect" type="button">Detect</button>
+            <button class="nav-item" data-page="map" type="button">Map</button>
+            <button class="nav-item" data-page="reports" type="button">Reports</button>
+            <button class="nav-item" data-page="history" type="button">History</button>
+            <button class="nav-item" data-page="settings" type="button">Settings</button>
+        </nav>
+
+        <div class="sidebar-user">
+            <div id="sidebarAvatar" class="user-avatar">U</div>
+            <div class="user-info">
+                <strong id="sidebarUserName">User</strong>
+                <span id="sidebarUserEmail">Sign in required</span>
+            </div>
+            <button id="logoutButton" class="icon-button" type="button" title="Sign out">Out</button>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="topbar">
+            <button id="mobileMenuButton" class="mobile-menu" type="button">Menu</button>
+            <div class="page-heading">
+                <h2 id="pageTitle">Dashboard</h2>
+                <p id="pageSubtitle">Overview of accessibility barriers</p>
+            </div>
+            <div class="topbar-user">
+                <div id="topAvatar" class="top-avatar">U</div>
+                <span id="topUserName">User</span>
+            </div>
+        </header>
+
+        <section id="dashboardPage" class="page active">
+            <div class="hero-card">
+                <div class="hero-content">
+                    <span class="eyebrow">ACCESSIBILITY INTELLIGENCE</span>
+                    <h1>Welcome to BarrierLens</h1>
+                    <p>Detect, analyze and document real-world accessibility barriers using AI.</p>
+                    <button id="startDetectionButton" class="primary-button" type="button">Start Detection</button>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="panel stat-card">
+                    <span>Total Reports</span>
+                    <strong id="totalReports">0</strong>
+                </div>
+                <div class="panel stat-card">
+                    <span>High Severity</span>
+                    <strong id="highSeverityCount">0</strong>
+                </div>
+                <div class="panel stat-card">
+                    <span>Resolved</span>
+                    <strong id="resolvedCount">0</strong>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <div>
+                        <h3>Recent Reports</h3>
+                        <p>Your latest accessibility detections.</p>
+                    </div>
+                    <button class="outline-button" data-page-target="reports" type="button">View Reports</button>
+                </div>
+                <div id="recentReports">
+                    <div class="empty-state">No reports yet.</div>
+                </div>
+            </div>
+        </section>
+
+        <section id="detectPage" class="page">
+            <div class="section-heading">
+                <div>
+                    <h1>Detection & Report</h1>
+                    <p>Capture an accessibility barrier and let BarrierLens analyze it.</p>
+                </div>
+            </div>
+
+            <div class="workflow-steps">
+                <div class="workflow-step active" data-step="1">1. Capture</div>
+                <div class="workflow-step" data-step="2">2. AI Analysis</div>
+                <div class="workflow-step" data-step="3">3. Details</div>
+                <div class="workflow-step" data-step="4">4. Submit</div>
+            </div>
+
+            <div class="detect-grid">
+                <div class="panel">
+                    <div class="panel-header">
+                        <div>
+                            <h3>Camera / Image</h3>
+                            <p>Capture or select an image.</p>
+                        </div>
+                    </div>
+                    <div id="cameraContainer" class="camera-container">
+                        <video id="cameraPreview" autoplay playsinline muted></video>
+                        <div id="cameraPlaceholder" class="camera-placeholder">
+                            <strong>Camera ready</strong>
+                            <small>Start the camera or choose an image.</small>
+                        </div>
+                    </div>
+                    <canvas id="captureCanvas" class="hidden"></canvas>
+                    <div class="capture-actions">
+                        <button id="startCameraButton" class="primary-button" type="button">Open Camera</button>
+                        <button id="captureButton" class="outline-button" type="button" disabled>Capture</button>
+                        <button id="selectImageButton" class="outline-button" type="button">Select Image</button>
+                    </div>
+                    <input id="imageInput" type="file" accept="image/*" hidden>
+                    <div id="imagePreview" class="image-preview">
+                        <span>No image selected</span>
+                    </div>
+                </div>
+
+                <div class="panel ai-analysis-panel">
+                    <div class="panel-header">
+                        <div>
+                            <h3>AI Analysis</h3>
+                            <p>Materialized analysis result.</p>
+                        </div>
+                        <span id="aiStatus" class="status-badge">Waiting</span>
+                    </div>
+                    <div id="aiAnalysis" class="ai-analysis">
+                        <div class="ai-empty">
+                            <h4>AI analysis will appear here</h4>
+                            <p>Capture an image to begin accessibility analysis.</p>
+                        </div>
+                    </div>
+                    <button id="runAnalysisButton" class="primary-button full-width" type="button" disabled>Analyze Image</button>
+                </div>
+            </div>
+
+            <div id="reportDetailsPanel" class="panel report-details-panel">
+                <div class="panel-header">
+                    <div>
+                        <h3>Barrier Details</h3>
+                        <p>Confirm or modify the AI-detected information.</p>
+                    </div>
+                </div>
+
+                <label class="field-label">Barrier Category</label>
+                <div id="categoryButtons" class="category-buttons">
+                    <button type="button" class="category-button active" data-category="surface">Surface</button>
+                    <button type="button" class="category-button" data-category="obstruction">Obstruction</button>
+                    <button type="button" class="category-button" data-category="transport">Transport</button>
+                    <button type="button" class="category-button" data-category="visual">Visually Impaired</button>
+                    <button type="button" class="category-button" data-category="auditory">Auditory</button>
+                    <button type="button" class="category-button" data-category="cognitive">Cognitive</button>
+                </div>
+
+                <label class="field-label">Barrier Type</label>
+                <div id="barrierTypeGrid" class="barrier-type-grid"></div>
+
+                <label class="field-label">Location</label>
+                <div class="location-card">
+                    <div class="location-info">
+                        <strong id="locationText">Location not detected</strong>
+                        <small id="coordinatesText">GPS coordinates unavailable</small>
+                    </div>
+                    <button id="detectLocationButton" class="outline-button" type="button">Detect</button>
+                </div>
+
+                <label class="field-label">Severity</label>
+                <div class="severity-grid">
+                    <label class="severity-option"><input type="radio" name="severity" value="low"><span>Low</span></label>
+                    <label class="severity-option"><input type="radio" name="severity" value="medium" checked><span>Medium</span></label>
+                    <label class="severity-option"><input type="radio" name="severity" value="high"><span>High</span></label>
+                    <label class="severity-option"><input type="radio" name="severity" value="critical"><span>Critical</span></label>
+                </div>
+
+                <label class="field-label" for="description">Description</label>
+                <textarea id="description" maxlength="1000" placeholder="Describe the accessibility barrier..."></textarea>
+                <div class="character-count"><span id="characterCount">0</span>/1000</div>
+
+                <div class="ocr-panel">
+                    <div>
+                        <strong>OCR / Text Detection</strong>
+                        <p>Extract visible text from the captured image.</p>
+                    </div>
+                    <button id="runOcrButton" class="outline-button" type="button" disabled>Run OCR</button>
+                </div>
+                <textarea id="ocrResult" class="ocr-result" placeholder="OCR result will appear here..." readonly></textarea>
+
+                <div class="attachments-panel">
+                    <div class="attachments-header">
+                        <div>
+                            <strong>Attachments</strong>
+                            <p>Add supporting images, PDFs or documents.</p>
+                        </div>
+                        <span id="attachmentCount" class="attachment-count">0 files</span>
+                    </div>
+                    <label for="attachmentInput" class="attachment-upload">
+                        <strong>Add Files</strong>
+                        <small>Images, PDF and documents</small>
+                    </label>
+                    <input id="attachmentInput" type="file" multiple accept="image/*,.pdf,.doc,.docx,.txt" hidden>
+                    <div id="attachmentList" class="attachment-list"></div>
+                </div>
+
+                <div class="submit-row">
+                    <button id="resetReportButton" class="outline-button" type="button">Reset</button>
+                    <button id="submitReportButton" class="primary-button" type="button">Submit Report</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="mapPage" class="page">
+            <div class="section-heading">
+                <div>
+                    <h1>Accessibility Map</h1>
+                    <p>View reported accessibility barriers.</p>
+                </div>
+            </div>
+            <div class="panel map-panel">
+                <div class="map-toolbar">
+                    <input id="mapSearch" type="search" placeholder="Search location...">
+                    <select id="mapFilter">
+                        <option value="all">All Categories</option>
+                        <option value="surface">Surface</option>
+                        <option value="obstruction">Obstruction</option>
+                        <option value="transport">Transport</option>
+                        <option value="visual">Visually Impaired</option>
+                        <option value="auditory">Auditory</option>
+                        <option value="cognitive">Cognitive</option>
+                    </select>
+                    <select id="mapSeverityFilter">
+                        <option value="all">All Severity</option>
+                        <option value="high">High</option>
+                        <option value="medium">Medium</option>
+                        <option value="low">Low</option>
+                    </select>
+                </div>
+                <div id="largeMap" class="large-map"></div>
+            </div>
+        </section>
+
+        <section id="reportsPage" class="page">
+            <div class="section-heading">
+                <div>
+                    <h1>Reports</h1>
+                    <p>Review and manage your submitted reports.</p>
+                </div>
+                <button id="newReportButton" class="primary-button" type="button">New Report</button>
+            </div>
+            <div class="filter-bar">
+                <input id="reportSearch" type="search" placeholder="Search reports...">
+                <select id="reportCategoryFilter">
+                    <option value="all">All Categories</option>
+                    <option value="surface">Surface</option>
+                    <option value="obstruction">Obstruction</option>
+                    <option value="transport">Transport</option>
+                    <option value="visual">Visually Impaired</option>
+                    <option value="auditory">Auditory</option>
+                    <option value="cognitive">Cognitive</option>
+                </select>
+            </div>
+            <div id="reportsList" class="reports-list">
+                <div class="empty-state">No reports available.</div>
+            </div>
+        </section>
+
+        <section id="historyPage" class="page">
+            <div class="section-heading">
+                <div>
+                    <span class="eyebrow">ACTIVITY CENTER</span>
+                    <h1>History</h1>
+                    <p>Track and review your previous accessibility detections.</p>
+                </div>
+                <div class="history-summary">
+                    <span class="history-summary-dot"></span>
+                    <span id="historySummaryText">Detection Activity</span>
+                </div>
+            </div>
+
+            <div class="history-toolbar">
+                <div class="history-search-wrap">
+                    <input id="historySearch" type="search" placeholder="Search barrier, category or location..." autocomplete="off">
+                </div>
+                <select id="historyCategoryFilter">
+                    <option value="all">All Categories</option>
+                    <option value="surface">Surface</option>
+                    <option value="obstruction">Obstruction</option>
+                    <option value="transport">Transport</option>
+                    <option value="visual">Visual</option>
+                    <option value="auditory">Auditory</option>
+                    <option value="cognitive">Cognitive</option>
+                </select>
+                <select id="historySeverityFilter">
+                    <option value="all">All Severity</option>
+                    <option value="critical">Critical</option>
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                    <option value="low">Low</option>
+                </select>
+            </div>
+            <div id="historyList" class="history-list">
+                <div class="empty-state">No history available.</div>
+            </div>
+        </section>
+
+        <section id="settingsPage" class="page">
+            <div class="section-heading">
+                <div>
+                    <h1>Settings</h1>
+                    <p>Manage your BarrierLens account.</p>
+                </div>
+            </div>
+            <div class="settings-grid">
+                <div class="panel">
+                    <h3>Account</h3>
+                    <div class="setting-row">
+                        <span>Name</span>
+                        <strong id="settingsName">User</strong>
+                    </div>
+                    <div class="setting-row">
+                        <span>Email</span>
+                        <strong id="settingsEmail">N/A</strong>
+                    </div>
+                </div>
+                <div class="panel">
+                    <h3>Application</h3>
+                    <label class="setting-toggle">
+                        <span>Dark Mode</span>
+                        <input id="darkModeToggle" type="checkbox">
+                    </label>
+                    <label class="setting-toggle">
+                        <span>Notifications</span>
+                        <input id="notificationsToggle" type="checkbox">
+                    </label>
+                </div>
+                <div class="panel danger-panel">
+                    <h3>Account Actions</h3>
+                    <button id="settingsLogoutButton" class="outline-button" type="button">Sign Out</button>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
